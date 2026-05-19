@@ -61,6 +61,25 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+router.patch('/profile', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      res.status(400).json({ message: 'Nama tidak boleh kosong' });
+      return;
+    }
+    const user = await prisma.user.update({
+      where: { id: req.user!.userId },
+      data: { name: name.trim() },
+      select: { id: true, name: true, phone: true, email: true, role: true, photoUrl: true, pushToken: true, createdAt: true },
+    });
+    res.json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 router.patch('/push-token', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { pushToken } = req.body;
