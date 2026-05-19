@@ -9,8 +9,8 @@ const router = Router();
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, phone, email, password } = req.body;
-    if (!name || !phone || !password) {
-      res.status(400).json({ message: 'Nama, nomor HP, dan password wajib diisi' });
+    if (!phone || !password) {
+      res.status(400).json({ message: 'Nomor HP dan password wajib diisi' });
       return;
     }
 
@@ -22,7 +22,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { name, phone, email, passwordHash, role: 'customer' },
+      data: { name: name ?? phone, phone, email, passwordHash, role: 'customer' },
       select: { id: true, name: true, phone: true, email: true, role: true, photoUrl: true, pushToken: true, createdAt: true },
     });
 
