@@ -63,14 +63,27 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
 
 router.patch('/profile', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { name } = req.body;
-    if (!name || !name.trim()) {
-      res.status(400).json({ message: 'Nama tidak boleh kosong' });
+    const { name, photoUrl } = req.body;
+    const updateData: { name?: string; photoUrl?: string } = {};
+
+    if (name !== undefined) {
+      if (!name.trim()) {
+        res.status(400).json({ message: 'Nama tidak boleh kosong' });
+        return;
+      }
+      updateData.name = name.trim();
+    }
+    if (photoUrl !== undefined) {
+      updateData.photoUrl = photoUrl;
+    }
+    if (Object.keys(updateData).length === 0) {
+      res.status(400).json({ message: 'Tidak ada data yang diubah' });
       return;
     }
+
     const user = await prisma.user.update({
       where: { id: req.user!.userId },
-      data: { name: name.trim() },
+      data: updateData,
       select: { id: true, name: true, phone: true, email: true, role: true, photoUrl: true, pushToken: true, createdAt: true },
     });
     res.json({ user });
