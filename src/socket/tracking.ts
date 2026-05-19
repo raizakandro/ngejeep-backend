@@ -12,11 +12,14 @@ export function setupTracking(io: Server): void {
     socket.on('driver:go-online', (driverId: string) => {
       socket.join('drivers:online');
       socket.data.driverId = driverId;
+      io.to('admin').emit('driver:status-changed', { driverId, status: 'online' });
     });
 
     socket.on('driver:go-offline', () => {
       socket.leave('drivers:online');
+      const driverId = socket.data.driverId;
       delete socket.data.driverId;
+      io.to('admin').emit('driver:status-changed', { driverId, status: 'offline' });
     });
 
     // Driver sends GPS position — save to DB and push to order rooms + admin
